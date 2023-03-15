@@ -1,0 +1,121 @@
+package Models;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import Models.Aula;
+
+public class AulaDao {
+	private String cadenaConexion = "jdbc:mysql://mysql-trifulcas.alwaysdata.net:3306/trifulcas_code";
+	private String usuario = "trifulcas_code";
+	private String password = "TrifulcasForever";
+	private Connection con;
+
+	public AulaDao() {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+
+			con = DriverManager.getConnection("jdbc:mysql://mysql-trifulcas.alwaysdata.net:3306/trifulcas_code",
+					"trifulcas_code", "TrifulcasForever");
+		} catch (Exception ex) {
+			System.err.println("Error al establecer la conexión a la base de datos: " + ex.getMessage());
+			return;
+		}
+	}
+
+	public List<Aula> get() {
+		if (con == null) {
+			System.out.println("Fallo de conexión a la BBDD");
+			return null;
+		}
+
+		try {
+			Statement stmt = con.createStatement();
+			List<Aula> res = new ArrayList<Aula>();
+			ResultSet rs = stmt.executeQuery("select * from aula");
+			while (rs.next()) {
+				res.add(new Aula(rs.getInt("id"), rs.getString("nombre"), rs.getInt("capacidad")));
+			}
+			return res;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public Aula getById(int id) {
+		if (con == null) {
+			System.out.println("Fallo de conexión a la BBDD");
+			return null;
+		}
+		try {
+			PreparedStatement ps = con.prepareStatement("select * from aula where id=?");
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				return new Aula(rs.getInt("id"), rs.getString("nombre"), rs.getInt("capacidad"));
+			}
+			System.out.println("No existe ninguna aula con el id " + id);
+			return null;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public Aula addAula(Aula aula) {
+
+		if (con == null) {
+			System.out.println("no se ha podido conectar a la Base de Datos");
+			return null;
+		}
+		try {
+			PreparedStatement ps = con.prepareStatement("insert into aula (nombre, capacidad) values(?,?)");
+			ps.setString(1, aula.getNombre());
+			ps.setInt(2, aula.getCapacidad());
+			int filasAfectadas = ps.executeUpdate();
+			return aula;
+
+		} catch (Exception ex) {
+			System.out.println("Error al añadir el aula");
+			System.out.println(ex.getMessage());
+			return null;
+		}
+	}
+
+	public Aula updateAula(int id, Aula aula) {
+		try {
+
+			PreparedStatement ps = con.prepareStatement("update aula set nombre = ? where id = ?");
+			ps.setString(1, aula.getNombre());
+			ps.setInt(2, aula.getId());
+
+			int filasAfectadas = ps.executeUpdate();
+			return aula;
+		} catch (SQLException ex) {
+			System.err.println("Error al actualizar el nombre del país: " + ex.getMessage());
+			return null;
+		}
+	}
+
+	public boolean deleteAula(int id) {
+		try {
+			PreparedStatement ps = con.prepareStatement("DELETE FROM aula WHERE id = ?");
+			ps.setInt(1, id);
+
+			int filasBorradas = ps.executeUpdate();
+			return ps.executeUpdate() == 1;
+
+		} catch (SQLException ex) {
+			System.err.println("Error al borrar el aula: " + ex.getMessage());
+			return false;
+		}
+	}
+}
