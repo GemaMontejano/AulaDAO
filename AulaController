@@ -6,16 +6,16 @@ import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import DAONuevo.Country;
-import DAONuevo.CountryDAO;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Servlet implementation class AulaController
+ * Servlet implementation class AulaController2
  */
+@WebServlet("/Aula/*")
 public class AulaController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -30,96 +30,115 @@ public class AulaController extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		JSONObject resultado = new JSONObject();
+		boolean error = false;
+		String message = "OK";
+		String datos = "";
 		try {
 			String parametro = request.getPathInfo();
 			AulaDao aulas = new AulaDao();
-
 			if (parametro == null) {
-
 				List<Aula> todos = aulas.get();
-				JSONArray resultado = new JSONArray(todos);
-				response.getWriter().append(resultado.toString());
+				JSONArray res = new JSONArray(todos);
+				datos = res.toString();
 			} else {
 				int id = Integer.parseInt(parametro.substring(1));
 				Aula aula = aulas.getById(id);
-				JSONObject resultado = new JSONObject(aula);
-				response.getWriter().append(resultado.toString());
+				JSONObject res = new JSONObject(aula);
+				datos = res.toString();
 			}
 		} catch (Exception ex) {
-			JSONObject error = new JSONObject();
-			error.put("Error", "GET");
-			error.put("Mensaje", ex.getMessage());
-			response.getWriter().append(error.toString());
+			message = ex.getMessage();
+			error = true;
 		}
+		resultado.put("Error", error);
+		resultado.put("Message", message);
+		resultado.put("Data", datos);
+		response.getWriter().append(resultado.toString());
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
 	 *      response)
 	 */
+	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		JSONObject resultado = new JSONObject();
+		boolean error = false;
+		String message = "OK";
+		String datos = "";
 		try {
-
+			// Para recoger datos que se envian
 			String data = request.getReader().lines().collect(Collectors.joining());
 			JSONObject aula = new JSONObject(data);
 			AulaDao daoAula = new AulaDao();
-			Aula aulaDos = new Aula(0, aula.getString("nombre"), 4);
-			daoAula.addAula(aulaDos);
-
+			Aula aulaDos = new Aula(0, aula.getString("nombre"), aula.getInt("capacidad"));
+			datos = daoAula.addAula(aulaDos).toString();
 		} catch (Exception ex) {
-			JSONObject error = new JSONObject();
-			error.put("Error", "POST");
-			error.put("Mensaje", ex.getMessage());
-			response.getWriter().append(error.toString());
+			message = ex.getMessage();
+			error = true;
 		}
+		resultado.put("Error", error);
+		resultado.put("Message", message);
+		resultado.put("Data", datos);
+		response.getWriter().append(resultado.toString());
 	}
 
 	/**
 	 * @see HttpServlet#doPut(HttpServletRequest, HttpServletResponse)
 	 */
+	@Override
 	protected void doPut(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		JSONObject resultado = new JSONObject();
+		boolean error = false;
+		String message = "OK";
+		String datos = "";
 		try {
-
 			String data = request.getReader().lines().collect(Collectors.joining());
 			JSONObject aula = new JSONObject(data);
-
 			String parametro = request.getPathInfo();
 			int id = Integer.parseInt(parametro.substring(1));
-
 			AulaDao daoAula = new AulaDao();
-			Aula aulaDos = new Aula(0, aula.getString("nombre"), 10);
+			Aula aulaDos = new Aula(0, aula.getString("nombre"), aula.getInt("capacidad"));
 			daoAula.updateAula(id, aulaDos);
-
+			datos = new Aula(id, aula.getString("nombre"), aula.getInt("capacidad")).toString();
 		} catch (Exception ex) {
-			JSONObject error = new JSONObject();
-			error.put("Error", "PUT");
-			error.put("Mensaje", ex.getMessage());
-			response.getWriter().append(error.toString());
+			message = ex.getMessage();
+			error = true;
 		}
-
+		resultado.put("Error", error);
+		resultado.put("Message", message);
+		resultado.put("Data", datos);
+		response.getWriter().append(resultado.toString());
 	}
 
 	/**
 	 * @see HttpServlet#doDelete(HttpServletRequest, HttpServletResponse)
 	 */
+	@Override
 	protected void doDelete(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		JSONObject resultado = new JSONObject();
+		boolean error = false;
+		String message = "OK";
+		String datos = "";
 		try {
 			String parametro = request.getPathInfo();
-			int id = Integer.parseInt(parametro.substring(1));
 			AulaDao daoAula = new AulaDao();
+			int id = Integer.parseInt(parametro.substring(1));
 			daoAula.deleteAula(id);
-
 		} catch (Exception ex) {
-			JSONObject error = new JSONObject();
-			error.put("Error", "DELETE");
-			error.put("Mensaje", ex.getMessage());
-			response.getWriter().append(error.toString());
+			message = ex.getMessage();
+			error = true;
 		}
+		resultado.put("Error", error);
+		resultado.put("Message", message);
+		resultado.put("Data", datos);
+		response.getWriter().append(resultado.toString());
 	}
 }
-
